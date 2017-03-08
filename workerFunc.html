@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>web worker func</title>
+
+	<style>
+		.loader { /* from w3schools */
+		    border: 3px solid #f3f3f3; /* Light grey */
+		    border-top: 3px solid #3498db; /* Blue */
+		    border-radius: 50%;
+		    width: 20px;
+		    height: 20px;
+		    animation: spin 2s linear infinite;
+		}
+		@keyframes spin {
+		    0% { transform: rotate(0deg); }
+		    100% { transform: rotate(360deg); }
+		}
+	</style>
+</head>
+<body>
+
+	<p> Text from HTML </p>
+
+	<p> From worker: </p>
+	<p id="infoByWorker" class="loader"> </p>
+
+	<script>
+		// worker function definition
+		var workerFunc = function() {
+			var sum = 0; 
+			for (var i = 0; i < 1000000000; i++){
+				if (i % 100000000 == 0) { sum += i; }
+			} 
+			postMessage(sum);
+		}
+
+		// worker handle
+		var worker = makeWorkerFromFunc(workerFunc);
+
+		worker.onmessage = function(e) {
+			var infoByWorker = document.getElementById('infoByWorker');
+			infoByWorker.className = ''; // no loader
+			infoByWorker.textContent = e.data;
+		}
+
+		// function ->  worker
+		function makeWorkerFromFunc(func) {
+		    var URL = window.URL || window.webkitURL;
+		    var Blob = window.Blob;
+		    var Worker = window.Worker;
+		    
+		    if (!URL || !Blob || !Worker || !func) {
+		        return null;
+		    }
+
+		    var blob = new Blob(['(' + func.toString() + ')()'], { type: "text/javascript" });
+		    
+		    return new Worker(URL.createObjectURL(blob));
+		}
+
+	</script>
+
+</body>
+</html>
